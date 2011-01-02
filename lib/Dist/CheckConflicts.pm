@@ -1,6 +1,6 @@
 package Dist::CheckConflicts;
 BEGIN {
-  $Dist::CheckConflicts::VERSION = '0.01';
+  $Dist::CheckConflicts::VERSION = '0.02';
 }
 use strict;
 use warnings;
@@ -31,7 +31,14 @@ sub import {
 
     my %conflicts = %{ $conflicts || {} };
     for my $also (@{ $alsos || [] }) {
-        eval "require $also; 1;" or die "Couldn't find package $also: $@";
+        eval "require $also; 1;" or next;
+        if (!exists $CONFLICTS{$also}) {
+            $also .= '::Conflicts';
+            eval "require $also; 1;" or next;
+        }
+        if (!exists $CONFLICTS{$also}) {
+            next;
+        }
         my %also_confs = $also->conflicts;
         for my $also_conf (keys %also_confs) {
             $conflicts{$also_conf} = $also_confs{$also_conf}
@@ -123,7 +130,7 @@ Dist::CheckConflicts - declare version conflicts for your dist
 
 =head1 VERSION
 
-version 0.01
+version 0.02
 
 =head1 SYNOPSIS
 
@@ -272,7 +279,7 @@ Jesse Luehrs <doy at tozt dot net>
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2010 by Jesse Luehrs.
+This software is copyright (c) 2011 by Jesse Luehrs.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.

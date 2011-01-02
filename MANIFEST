@@ -12,6 +12,7 @@ t/01-basic.t
 t/02-conflicts.t
 t/03-dist.t
 t/04-merge.t
+t/05-also.t
 t/lib/01/Bar/Conflicts.pm
 t/lib/01/Bar/Conflicts2.pm
 t/lib/01/Bar/Conflicts3.pm
@@ -46,6 +47,10 @@ t/lib/03/Foo/Three.pm
 t/lib/03/Foo/Two.pm
 t/lib/04/Foo/Conflicts.pm
 t/lib/04/Foo/Conflicts2.pm
+t/lib/05/Bar/Conflicts.pm
+t/lib/05/Bar/Conflicts2.pm
+t/lib/05/Foo.pm
+t/lib/05/Foo/Conflicts.pm
 t/release-eol.t
 t/release-no-tabs.t
 t/release-pod-coverage.t
