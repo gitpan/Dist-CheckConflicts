@@ -1,6 +1,6 @@
 package Dist::CheckConflicts;
 BEGIN {
-  $Dist::CheckConflicts::VERSION = '0.02';
+  $Dist::CheckConflicts::VERSION = '0.03'; # TRIAL
 }
 use strict;
 use warnings;
@@ -19,6 +19,7 @@ my $import = Sub::Exporter::build_exporter({
 });
 
 my %CONFLICTS;
+my %HAS_CONFLICTS;
 my %DISTS;
 
 sub import {
@@ -49,6 +50,46 @@ sub import {
 
     $CONFLICTS{$for} = \%conflicts;
     $DISTS{$for}     = $dist || $for;
+    for my $conflict (keys %conflicts) {
+        $HAS_CONFLICTS{$conflict} ||= [];
+        push @{ $HAS_CONFLICTS{$conflict} }, $for;
+    }
+
+    # warn for already loaded things...
+    for my $conflict (keys %conflicts) {
+        (my $file = $conflict) =~ s{::}{/}g;
+        $file .= '.pm';
+        if (exists $INC{$file}) {
+            _check_version([$for], $conflict);
+        }
+    }
+
+    # and warn for subsequently loaded things...
+    @INC = grep {
+        !(ref($_) eq 'ARRAY' && @$_ > 1 && $_->[1] == \%CONFLICTS)
+    } @INC;
+    unshift @INC, [
+        sub {
+            my ($sub, $file) = @_;
+
+            (my $mod = $file) =~ s{\.pm$}{};
+            $mod =~ s{/}{::}g;
+            return unless $mod =~ /[\w:]+/;
+
+            return unless defined $HAS_CONFLICTS{$mod};
+
+            {
+                local $HAS_CONFLICTS{$mod};
+                require $file;
+            }
+
+            _check_version($HAS_CONFLICTS{$mod}, $mod);
+
+            my $i = 1;
+            return sub { $_ = $i-- }; # the previous require already handled it
+        },
+        \%CONFLICTS, # arbitrary but unique, see above
+    ];
 
     goto $import;
 }
@@ -64,6 +105,26 @@ sub _strip_opt {
     splice @_, $idx, 2;
 
     return ( $val, @_ );
+}
+
+sub _check_version {
+    my ($fors, $mod) = @_;
+
+    for my $for (@$fors) {
+        my $conflict_ver = $CONFLICTS{$for}{$mod};
+        my $version = do {
+            no strict 'refs';
+            ${ ${ $mod . '::' }{VERSION} };
+        };
+
+        if ($version le $conflict_ver) {
+            warn <<EOF;
+Conflict detected for $DISTS{$for}:
+  $mod is version $version, but must be greater than version $conflict_ver
+EOF
+            return;
+        }
+    }
 }
 
 
@@ -130,7 +191,7 @@ Dist::CheckConflicts - declare version conflicts for your dist
 
 =head1 VERSION
 
-version 0.02
+version 0.03
 
 =head1 SYNOPSIS
 
@@ -201,6 +262,10 @@ the C<Foo> dist which uses Dist::CheckConflicts):
     perl -MFoo::Conflicts -e'print "$_\n"
         for map { $_->{package} } Foo::Conflicts->calculate_conflicts' | cpanm
 
+As an added bonus, loading your conflicts module will provide warnings at
+runtime if conflicting modules are detected (regardless of whether they are
+loaded before or afterwards.
+
 =head1 METHODS
 
 =head2 conflicts
@@ -224,11 +289,6 @@ Examine the modules that are currently installed, and return a list of modules
 which conflict with the dist. The modules will be returned as a list of
 hashrefs, each containing C<package>, C<installed>, and C<required> keys.
 
-=head1 TODO
-
-Provide a way to insert a hook into C<@INC> which warns if a conflicting module
-is loaded (would this be reasonable?)
-
 =head1 BUGS
 
 No known bugs.
@@ -239,11 +299,9 @@ L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Dist-CheckConflicts>.
 
 =head1 SEE ALSO
 
-=over 4
+L<Module::Install::CheckConflicts>
 
-=item * L<Module::Install::CheckConflicts>
-
-=back
+L<Dist::Zilla::Plugin::Conflicts>
 
 =head1 SUPPORT
 

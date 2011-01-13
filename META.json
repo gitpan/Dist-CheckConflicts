@@ -32,14 +32,14 @@
          }
       }
    },
-   "release_status" : "stable",
+   "release_status" : "testing",
    "resources" : {
       "repository" : {
          "type" : "git",
          "url" : "git://github.com/doy/dist-checkconflicts.git"
       }
    },
-   "version" : "0.02",
+   "version" : "0.03",
    "x_Dist_Zilla" : {
       "plugins" : [
          {
@@ -233,7 +233,7 @@
       "zilla" : {
          "class" : "Dist::Zilla::Dist::Builder",
          "config" : {
-            "is_trial" : 0
+            "is_trial" : 1
          },
          "version" : "4.200000"
       }

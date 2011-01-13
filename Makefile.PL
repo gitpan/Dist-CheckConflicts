@@ -26,7 +26,7 @@ my %WriteMakefileArgs = (
     'List::MoreUtils' => '0.12',
     'Sub::Exporter' => '0'
   },
-  'VERSION' => '0.02',
+  'VERSION' => '0.03',
   'test' => {
     'TESTS' => 't/*.t'
   }

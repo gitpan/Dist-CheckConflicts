@@ -1,5 +1,8 @@
 Revision history for Dist-CheckConflicts
 
+0.03  2011-01-13
+      - add runtime conflict warnings
+
 0.02  2011-01-02
       - ignore 'also' packages that aren't found, and also check for a
         corresponding ::Conflicts package
