@@ -19,7 +19,7 @@ requires:
   Sub::Exporter: 0
 resources:
   repository: git://github.com/doy/dist-checkconflicts.git
-version: 0.03
+version: 0.04
 x_Dist_Zilla:
   plugins:
     -

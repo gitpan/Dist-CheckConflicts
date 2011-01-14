@@ -1,6 +1,6 @@
 package Dist::CheckConflicts;
 BEGIN {
-  $Dist::CheckConflicts::VERSION = '0.03'; # TRIAL
+  $Dist::CheckConflicts::VERSION = '0.04'; # TRIAL
 }
 use strict;
 use warnings;
@@ -86,7 +86,7 @@ sub import {
             _check_version($HAS_CONFLICTS{$mod}, $mod);
 
             my $i = 1;
-            return sub { $_ = $i-- }; # the previous require already handled it
+            return sub { $_ = $i-- if $i }; # the previous require already handled it
         },
         \%CONFLICTS, # arbitrary but unique, see above
     ];
@@ -191,7 +191,7 @@ Dist::CheckConflicts - declare version conflicts for your dist
 
 =head1 VERSION
 
-version 0.03
+version 0.04
 
 =head1 SYNOPSIS
 
@@ -264,7 +264,7 @@ the C<Foo> dist which uses Dist::CheckConflicts):
 
 As an added bonus, loading your conflicts module will provide warnings at
 runtime if conflicting modules are detected (regardless of whether they are
-loaded before or afterwards.
+loaded before or afterwards).
 
 =head1 METHODS
 
