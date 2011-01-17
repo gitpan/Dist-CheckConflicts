@@ -1,6 +1,6 @@
 package Dist::CheckConflicts;
 BEGIN {
-  $Dist::CheckConflicts::VERSION = '0.04'; # TRIAL
+  $Dist::CheckConflicts::VERSION = '0.05'; # TRIAL
 }
 use strict;
 use warnings;
@@ -85,8 +85,14 @@ sub import {
 
             _check_version($HAS_CONFLICTS{$mod}, $mod);
 
-            my $i = 1;
-            return sub { $_ = $i-- if $i }; # the previous require already handled it
+            # the previous require already handled it
+            my $called;
+            return sub {
+                return 0 if $called;
+                $_ = "1;";
+                $called = 1;
+                return 1;
+            };
         },
         \%CONFLICTS, # arbitrary but unique, see above
     ];
@@ -191,7 +197,7 @@ Dist::CheckConflicts - declare version conflicts for your dist
 
 =head1 VERSION
 
-version 0.04
+version 0.05
 
 =head1 SYNOPSIS
 

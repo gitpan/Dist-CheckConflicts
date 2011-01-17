@@ -17,9 +17,10 @@ name: Dist-CheckConflicts
 requires:
   List::MoreUtils: 0.12
   Sub::Exporter: 0
+  perl: 5.8.1
 resources:
   repository: git://github.com/doy/dist-checkconflicts.git
-version: 0.04
+version: 0.05
 x_Dist_Zilla:
   plugins:
     -
