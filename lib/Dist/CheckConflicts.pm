@@ -1,6 +1,9 @@
 package Dist::CheckConflicts;
 BEGIN {
-  $Dist::CheckConflicts::VERSION = '0.05'; # TRIAL
+  $Dist::CheckConflicts::AUTHORITY = 'cpan:DOY';
+}
+{
+  $Dist::CheckConflicts::VERSION = '0.06'; # TRIAL
 }
 use strict;
 use warnings;
@@ -8,6 +11,8 @@ use warnings;
 
 use Carp;
 use List::MoreUtils 'first_index';
+use Class::Load 'try_load_class';
+use Module::Runtime 'module_notional_filename';
 use Sub::Exporter;
 
 
@@ -57,9 +62,7 @@ sub import {
 
     # warn for already loaded things...
     for my $conflict (keys %conflicts) {
-        (my $file = $conflict) =~ s{::}{/}g;
-        $file .= '.pm';
-        if (exists $INC{$file}) {
+        if (exists $INC{module_notional_filename($conflict)}) {
             _check_version([$for], $conflict);
         }
     }
@@ -170,16 +173,17 @@ sub calculate_conflicts {
 
     CONFLICT:
     for my $conflict (keys %conflicts) {
-        {
-            local $SIG{__WARN__} = sub { };
-            eval "require $conflict; 1" or next CONFLICT;
-        }
-        my $installed = $conflict->VERSION;
+        my ($success, $error) = try_load_class($conflict);
+        my $file = module_notional_filename($conflict);
+        next if not $success and $error =~ /Can't locate \Q$file\E in \@INC/;
+
+        warn "Warning: $conflict did not compile" if not $success;
+        my $installed = $success ? $conflict->VERSION : 'unknown';
         push @ret, {
             package   => $conflict,
             installed => $installed,
             required  => $conflicts{$conflict},
-        } if $installed le $conflicts{$conflict};
+        } if not $success or $installed le $conflicts{$conflict};
     }
 
     return sort { $a->{package} cmp $b->{package} } @ret;
@@ -189,6 +193,7 @@ sub calculate_conflicts {
 1;
 
 __END__
+
 =pod
 
 =head1 NAME
@@ -197,7 +202,7 @@ Dist::CheckConflicts - declare version conflicts for your dist
 
 =head1 VERSION
 
-version 0.05
+version 0.06
 
 =head1 SYNOPSIS
 
@@ -343,10 +348,9 @@ Jesse Luehrs <doy at tozt dot net>
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2011 by Jesse Luehrs.
+This software is copyright (c) 2013 by Jesse Luehrs.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-
