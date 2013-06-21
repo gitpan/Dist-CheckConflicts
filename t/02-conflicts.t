@@ -1,27 +1,9 @@
 #!/usr/bin/env perl
 use strict;
 use warnings;
-
 use Test::More;
 use Test::Fatal;
-use Test::Warn;
-use Test::Warnings;
 use lib 't/lib/02';
-
-sub use_ok_warnings {
-    my ($class, @conflicts) = @_;
-    local $Test::Builder::Level = $Test::Builder::Level + 1;
-    @conflicts = sort map { "Conflict detected for $_->[0]:\n  $_->[1] is version $_->[2], but must be greater than version $_->[3]\n" } @conflicts;
-
-    my @warnings;
-    {
-        local $SIG{__WARN__} = sub { push @warnings, $_[0] };
-        use_ok($class);
-    }
-    @warnings = sort @warnings;
-
-    is_deeply(\@warnings, \@conflicts, "correct runtime warnings for $class");
-}
 
 {
     use_ok('Foo::Conflicts::Good');
@@ -38,11 +20,7 @@ sub use_ok_warnings {
 }
 
 {
-    use_ok_warnings(
-        'Foo::Conflicts::Bad',
-        ['Foo::Conflicts::Bad', 'Foo::Two', '0.02', '0.02'],
-        ['Foo::Conflicts::Bad', 'Foo',      '0.02', '0.03'],
-    );
+    use_ok('Foo::Conflicts::Bad');
 
     is_deeply(
         [ Foo::Conflicts::Bad->calculate_conflicts ],
@@ -74,12 +52,7 @@ sub use_ok_warnings {
 }
 
 {
-    use_ok_warnings(
-        'Bar::Conflicts::Bad',
-        ['Bar::Conflicts::Bad2', 'Bar::Two', '0.02', '0.02'],
-        ['Bar::Conflicts::Bad',  'Bar::Two', '0.02', '0.02'],
-        ['Bar::Conflicts::Bad',  'Bar',      '0.02', '0.03'],
-    );
+    use_ok('Bar::Conflicts::Bad');
 
     is_deeply(
         [ Bar::Conflicts::Bad->calculate_conflicts ],
@@ -94,36 +67,6 @@ sub use_ok_warnings {
         "Conflicts detected for Bar::Conflicts::Bad:\n  Bar is version 0.02, but must be greater than version 0.03\n  Bar::Two is version 0.02, but must be greater than version 0.02\n",
         "correct conflict error"
     );
-}
-
-{
-    # conflicting module is utterly broken
-
-    use_ok('Foo::Conflicts::Broken');
-
-    my @conflicts;
-    warning_like { @conflicts = Foo::Conflicts::Broken->calculate_conflicts }
-        qr/Warning: Broken did not compile/,
-        'Warning is issued when Broken fails to compile';
-
-    is_deeply(
-        \@conflicts,
-        [
-            { package => 'Broken', installed => 'unknown', required => '0.03' },
-        ],
-        "correct versions for all conflicts",
-    );
-
-    warning_like {
-        like(
-            exception { Foo::Conflicts::Broken->check_conflicts },
-            qr/^Conflicts detected for Foo::Conflicts::Broken:\n  Broken is version unknown, but must be greater than version 0.03\n/,
-            "correct conflict error",
-        );
-        }
-        qr/Warning: Broken did not compile/,
-        'Warning is also issued when Broken fails to compile',
-    ;
 }
 
 done_testing;

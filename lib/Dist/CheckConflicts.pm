@@ -3,31 +3,28 @@ BEGIN {
   $Dist::CheckConflicts::AUTHORITY = 'cpan:DOY';
 }
 {
-  $Dist::CheckConflicts::VERSION = '0.06'; # TRIAL
+  $Dist::CheckConflicts::VERSION = '0.06';
 }
 use strict;
 use warnings;
+use 5.008001;
 # ABSTRACT: declare version conflicts for your dist
 
+use base 'Exporter';
+our @EXPORT = our @EXPORT_OK = (
+    qw(conflicts check_conflicts calculate_conflicts dist)
+);
+
 use Carp;
-use List::MoreUtils 'first_index';
-use Class::Load 'try_load_class';
-use Module::Runtime 'module_notional_filename';
-use Sub::Exporter;
+use List::MoreUtils 0.12 'first_index';
 
-
-my $import = Sub::Exporter::build_exporter({
-    exports => [ qw(conflicts check_conflicts calculate_conflicts dist) ],
-    groups => {
-        default => [ qw(conflicts check_conflicts calculate_conflicts dist) ],
-    },
-});
 
 my %CONFLICTS;
 my %HAS_CONFLICTS;
 my %DISTS;
 
 sub import {
+    my $pkg = shift;
     my $for = caller;
 
     my ($conflicts, $alsos, $dist);
@@ -55,52 +52,57 @@ sub import {
 
     $CONFLICTS{$for} = \%conflicts;
     $DISTS{$for}     = $dist || $for;
-    for my $conflict (keys %conflicts) {
-        $HAS_CONFLICTS{$conflict} ||= [];
-        push @{ $HAS_CONFLICTS{$conflict} }, $for;
-    }
 
-    # warn for already loaded things...
-    for my $conflict (keys %conflicts) {
-        if (exists $INC{module_notional_filename($conflict)}) {
-            _check_version([$for], $conflict);
+    if (grep { $_ eq ':runtime' } @_) {
+        for my $conflict (keys %conflicts) {
+            $HAS_CONFLICTS{$conflict} ||= [];
+            push @{ $HAS_CONFLICTS{$conflict} }, $for;
         }
+
+        # warn for already loaded things...
+        for my $conflict (keys %conflicts) {
+            (my $file = $conflict) =~ s{::}{/}g;
+            $file .= '.pm';
+            if (exists $INC{$file}) {
+                _check_version([$for], $conflict);
+            }
+        }
+
+        # and warn for subsequently loaded things...
+        @INC = grep {
+            !(ref($_) eq 'ARRAY' && @$_ > 1 && $_->[1] == \%CONFLICTS)
+        } @INC;
+        unshift @INC, [
+            sub {
+                my ($sub, $file) = @_;
+
+                (my $mod = $file) =~ s{\.pm$}{};
+                $mod =~ s{/}{::}g;
+                return unless $mod =~ /[\w:]+/;
+
+                return unless defined $HAS_CONFLICTS{$mod};
+
+                {
+                    local $HAS_CONFLICTS{$mod};
+                    require $file;
+                }
+
+                _check_version($HAS_CONFLICTS{$mod}, $mod);
+
+                # the previous require already handled it
+                my $called;
+                return sub {
+                    return 0 if $called;
+                    $_ = "1;";
+                    $called = 1;
+                    return 1;
+                };
+            },
+            \%CONFLICTS, # arbitrary but unique, see above
+        ];
     }
 
-    # and warn for subsequently loaded things...
-    @INC = grep {
-        !(ref($_) eq 'ARRAY' && @$_ > 1 && $_->[1] == \%CONFLICTS)
-    } @INC;
-    unshift @INC, [
-        sub {
-            my ($sub, $file) = @_;
-
-            (my $mod = $file) =~ s{\.pm$}{};
-            $mod =~ s{/}{::}g;
-            return unless $mod =~ /[\w:]+/;
-
-            return unless defined $HAS_CONFLICTS{$mod};
-
-            {
-                local $HAS_CONFLICTS{$mod};
-                require $file;
-            }
-
-            _check_version($HAS_CONFLICTS{$mod}, $mod);
-
-            # the previous require already handled it
-            my $called;
-            return sub {
-                return 0 if $called;
-                $_ = "1;";
-                $called = 1;
-                return 1;
-            };
-        },
-        \%CONFLICTS, # arbitrary but unique, see above
-    ];
-
-    goto $import;
+    $pkg->export_to_level(1, @_);
 }
 
 sub _strip_opt {
@@ -173,17 +175,16 @@ sub calculate_conflicts {
 
     CONFLICT:
     for my $conflict (keys %conflicts) {
-        my ($success, $error) = try_load_class($conflict);
-        my $file = module_notional_filename($conflict);
-        next if not $success and $error =~ /Can't locate \Q$file\E in \@INC/;
-
-        warn "Warning: $conflict did not compile" if not $success;
-        my $installed = $success ? $conflict->VERSION : 'unknown';
+        {
+            local $SIG{__WARN__} = sub { };
+            eval "require $conflict; 1" or next CONFLICT;
+        }
+        my $installed = $conflict->VERSION;
         push @ret, {
             package   => $conflict,
             installed => $installed,
             required  => $conflicts{$conflict},
-        } if not $success or $installed le $conflicts{$conflict};
+        } if $installed le $conflicts{$conflict};
     }
 
     return sort { $a->{package} cmp $b->{package} } @ret;
@@ -324,21 +325,21 @@ You can also look for information at:
 
 =over 4
 
-=item * AnnoCPAN: Annotated CPAN documentation
+=item * MetaCPAN
 
-L<http://annocpan.org/dist/Dist-CheckConflicts>
-
-=item * CPAN Ratings
-
-L<http://cpanratings.perl.org/d/Dist-CheckConflicts>
+L<https://metacpan.org/release/Dist-CheckConflicts>
 
 =item * RT: CPAN's request tracker
 
 L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=Dist-CheckConflicts>
 
-=item * Search CPAN
+=item * Github
 
-L<http://search.cpan.org/dist/Dist-CheckConflicts>
+L<https://github.com/doy/dist-checkconflicts>
+
+=item * CPAN Ratings
+
+L<http://cpanratings.perl.org/d/Dist-CheckConflicts>
 
 =back
 

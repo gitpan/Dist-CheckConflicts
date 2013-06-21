@@ -27,10 +27,8 @@ t/lib/02/Bar/Conflicts/Good2.pm
 t/lib/02/Bar/Conflicts/Good3.pm
 t/lib/02/Bar/Three.pm
 t/lib/02/Bar/Two.pm
-t/lib/02/Broken.pm
 t/lib/02/Foo.pm
 t/lib/02/Foo/Conflicts/Bad.pm
-t/lib/02/Foo/Conflicts/Broken.pm
 t/lib/02/Foo/Conflicts/Good.pm
 t/lib/02/Foo/Three.pm
 t/lib/02/Foo/Two.pm
@@ -74,7 +72,6 @@ t/lib/06/Foo/Baz.pm
 t/lib/06/Foo/Conflicts.pm
 t/lib/06/Foo/Foo.pm
 t/lib/06/Foo/Quux.pm
-weaver.ini
 xt/release/eol.t
 xt/release/no-tabs.t
 xt/release/pod-coverage.t

@@ -4,7 +4,7 @@
       "Jesse Luehrs <doy at tozt dot net>"
    ],
    "dynamic_config" : 0,
-   "generated_by" : "Dist::Zilla version 4.300034, CPAN::Meta::Converter version 2.130880",
+   "generated_by" : "Dist::Zilla version 4.300034, CPAN::Meta::Converter version 2.120921",
    "license" : [
       "perl_5"
    ],
@@ -28,23 +28,25 @@
       },
       "runtime" : {
          "requires" : {
-            "Class::Load" : "0.17",
+            "Carp" : "0",
+            "Exporter" : "0",
             "List::MoreUtils" : "0.12",
-            "Module::Runtime" : "0.012",
-            "Sub::Exporter" : "0",
-            "perl" : "v5.8.1"
+            "base" : "0",
+            "perl" : "5.008001",
+            "strict" : "0",
+            "warnings" : "0"
          }
       },
       "test" : {
          "requires" : {
+            "File::Find" : "0",
+            "File::Temp" : "0",
             "Test::Fatal" : "0",
-            "Test::More" : "0.88",
-            "Test::Warn" : "0",
-            "Test::Warnings" : "0"
+            "Test::More" : "0.88"
          }
       }
    },
-   "release_status" : "testing",
+   "release_status" : "stable",
    "resources" : {
       "bugtracker" : {
          "mailto" : "bug-dist-checkconflicts@rt.cpan.org",
@@ -53,26 +55,16 @@
       "homepage" : "http://metacpan.org/release/Dist-CheckConflicts",
       "repository" : {
          "type" : "git",
-         "url" : "https://github.com/karenetheridge/dist-checkconflicts.git",
-         "web" : "https://github.com/karenetheridge/dist-checkconflicts"
+         "url" : "git://github.com/doy/dist-checkconflicts.git",
+         "web" : "https://github.com/doy/dist-checkconflicts"
       }
    },
    "version" : "0.06",
    "x_Dist_Zilla" : {
       "perl" : {
-         "version" : "5.016003"
+         "version" : "5.018000"
       },
       "plugins" : [
-         {
-            "class" : "Dist::Zilla::Plugin::GithubMeta",
-            "name" : "GithubMeta",
-            "version" : "0.28"
-         },
-         {
-            "class" : "Dist::Zilla::Plugin::AutoMetaResources",
-            "name" : "AutoMetaResources",
-            "version" : "1.110050"
-         },
          {
             "class" : "Dist::Zilla::Plugin::Prereqs",
             "config" : {
@@ -245,25 +237,8 @@
             "version" : "4.300034"
          },
          {
-            "class" : "Dist::Zilla::Plugin::Prereqs",
-            "config" : {
-               "Dist::Zilla::Plugin::Prereqs" : {
-                  "phase" : "runtime",
-                  "type" : "requires"
-               }
-            },
-            "name" : "Prereqs",
-            "version" : "4.300034"
-         },
-         {
-            "class" : "Dist::Zilla::Plugin::Prereqs",
-            "config" : {
-               "Dist::Zilla::Plugin::Prereqs" : {
-                  "phase" : "test",
-                  "type" : "requires"
-               }
-            },
-            "name" : "TestRequires",
+            "class" : "Dist::Zilla::Plugin::AutoPrereqs",
+            "name" : "AutoPrereqs",
             "version" : "4.300034"
          },
          {
@@ -300,7 +275,7 @@
       "zilla" : {
          "class" : "Dist::Zilla::Dist::Builder",
          "config" : {
-            "is_trial" : "1"
+            "is_trial" : "0"
          },
          "version" : "4.300034"
       }

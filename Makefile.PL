@@ -20,16 +20,18 @@ my %WriteMakefileArgs = (
   "LICENSE" => "perl",
   "NAME" => "Dist::CheckConflicts",
   "PREREQ_PM" => {
-    "Class::Load" => "0.17",
+    "Carp" => 0,
+    "Exporter" => 0,
     "List::MoreUtils" => "0.12",
-    "Module::Runtime" => "0.012",
-    "Sub::Exporter" => 0
+    "base" => 0,
+    "strict" => 0,
+    "warnings" => 0
   },
   "TEST_REQUIRES" => {
+    "File::Find" => 0,
+    "File::Temp" => 0,
     "Test::Fatal" => 0,
-    "Test::More" => "0.88",
-    "Test::Warn" => 0,
-    "Test::Warnings" => 0
+    "Test::More" => "0.88"
   },
   "VERSION" => "0.06",
   "test" => {
