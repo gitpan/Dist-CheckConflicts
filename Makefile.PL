@@ -10,7 +10,7 @@ use ExtUtils::MakeMaker 6.30;
 
 my %WriteMakefileArgs = (
   "ABSTRACT" => "declare version conflicts for your dist",
-  "AUTHOR" => "Jesse Luehrs <doy at tozt dot net>",
+  "AUTHOR" => "Jesse Luehrs <doy\@tozt.net>",
   "BUILD_REQUIRES" => {},
   "CONFIGURE_REQUIRES" => {
     "ExtUtils::MakeMaker" => "6.30"
@@ -23,6 +23,7 @@ my %WriteMakefileArgs = (
     "Carp" => 0,
     "Exporter" => 0,
     "List::MoreUtils" => "0.12",
+    "Module::Runtime" => 0,
     "base" => 0,
     "strict" => 0,
     "warnings" => 0
@@ -31,9 +32,10 @@ my %WriteMakefileArgs = (
     "File::Find" => 0,
     "File::Temp" => 0,
     "Test::Fatal" => 0,
-    "Test::More" => "0.88"
+    "Test::More" => "0.88",
+    "Test::Warnings" => "0.005"
   },
-  "VERSION" => "0.06",
+  "VERSION" => "0.07",
   "test" => {
     "TESTS" => "t/*.t"
   }

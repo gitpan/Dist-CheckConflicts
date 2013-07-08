@@ -3,7 +3,7 @@ BEGIN {
   $Dist::CheckConflicts::AUTHORITY = 'cpan:DOY';
 }
 {
-  $Dist::CheckConflicts::VERSION = '0.06';
+  $Dist::CheckConflicts::VERSION = '0.07';
 }
 use strict;
 use warnings;
@@ -17,6 +17,7 @@ our @EXPORT = our @EXPORT_OK = (
 
 use Carp;
 use List::MoreUtils 0.12 'first_index';
+use Module::Runtime 'module_notional_filename', 'require_module';
 
 
 my %CONFLICTS;
@@ -34,10 +35,10 @@ sub import {
 
     my %conflicts = %{ $conflicts || {} };
     for my $also (@{ $alsos || [] }) {
-        eval "require $also; 1;" or next;
+        eval { require_module($also) } or next;
         if (!exists $CONFLICTS{$also}) {
             $also .= '::Conflicts';
-            eval "require $also; 1;" or next;
+            eval { require_module($also) } or next;
         }
         if (!exists $CONFLICTS{$also}) {
             next;
@@ -61,9 +62,7 @@ sub import {
 
         # warn for already loaded things...
         for my $conflict (keys %conflicts) {
-            (my $file = $conflict) =~ s{::}{/}g;
-            $file .= '.pm';
-            if (exists $INC{$file}) {
+            if (exists $INC{module_notional_filename($conflict)}) {
                 _check_version([$for], $conflict);
             }
         }
@@ -173,18 +172,24 @@ sub calculate_conflicts {
 
     my @ret;
 
+
     CONFLICT:
     for my $conflict (keys %conflicts) {
-        {
-            local $SIG{__WARN__} = sub { };
-            eval "require $conflict; 1" or next CONFLICT;
-        }
-        my $installed = $conflict->VERSION;
+        my $success = do {
+            local $SIG{__WARN__} = sub {};
+            eval { require_module($conflict) };
+        };
+        my $error = $@;
+        my $file = module_notional_filename($conflict);
+        next if not $success and $error =~ /Can't locate \Q$file\E in \@INC/;
+
+        warn "Warning: $conflict did not compile" if not $success;
+        my $installed = $success ? $conflict->VERSION : 'unknown';
         push @ret, {
             package   => $conflict,
             installed => $installed,
             required  => $conflicts{$conflict},
-        } if $installed le $conflicts{$conflict};
+        } if not $success or $installed le $conflicts{$conflict};
     }
 
     return sort { $a->{package} cmp $b->{package} } @ret;
@@ -203,7 +208,7 @@ Dist::CheckConflicts - declare version conflicts for your dist
 
 =head1 VERSION
 
-version 0.06
+version 0.07
 
 =head1 SYNOPSIS
 
@@ -329,13 +334,13 @@ You can also look for information at:
 
 L<https://metacpan.org/release/Dist-CheckConflicts>
 
-=item * RT: CPAN's request tracker
-
-L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=Dist-CheckConflicts>
-
 =item * Github
 
 L<https://github.com/doy/dist-checkconflicts>
+
+=item * RT: CPAN's request tracker
+
+L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=Dist-CheckConflicts>
 
 =item * CPAN Ratings
 
@@ -345,7 +350,7 @@ L<http://cpanratings.perl.org/d/Dist-CheckConflicts>
 
 =head1 AUTHOR
 
-Jesse Luehrs <doy at tozt dot net>
+Jesse Luehrs <doy@tozt.net>
 
 =head1 COPYRIGHT AND LICENSE
 
