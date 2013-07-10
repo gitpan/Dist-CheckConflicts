@@ -3,7 +3,7 @@ BEGIN {
   $Dist::CheckConflicts::AUTHORITY = 'cpan:DOY';
 }
 {
-  $Dist::CheckConflicts::VERSION = '0.07';
+  $Dist::CheckConflicts::VERSION = '0.08';
 }
 use strict;
 use warnings;
@@ -208,7 +208,7 @@ Dist::CheckConflicts - declare version conflicts for your dist
 
 =head1 VERSION
 
-version 0.07
+version 0.08
 
 =head1 SYNOPSIS
 
