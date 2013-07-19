@@ -3,11 +3,11 @@ BEGIN {
   $Dist::CheckConflicts::AUTHORITY = 'cpan:DOY';
 }
 {
-  $Dist::CheckConflicts::VERSION = '0.08';
+  $Dist::CheckConflicts::VERSION = '0.09';
 }
 use strict;
 use warnings;
-use 5.008001;
+use 5.006;
 # ABSTRACT: declare version conflicts for your dist
 
 use base 'Exporter';
@@ -105,16 +105,16 @@ sub import {
 }
 
 sub _strip_opt {
-    my $opt = shift;
-    my $idx = first_index { ( $_ || '' ) eq $opt } @_;
+    my ($opt, @args) = @_;
+    my $idx = first_index { ( $_ || '' ) eq $opt } @args;
 
-    return ( undef, @_ ) unless $idx >= 0 && $#_ >= $idx + 1;
+    return ( undef, @args ) unless $idx >= 0 && $#args >= $idx + 1;
 
-    my $val = $_[ $idx + 1 ];
+    my $val = $args[ $idx + 1 ];
 
-    splice @_, $idx, 2;
+    splice @args, $idx, 2;
 
-    return ( $val, @_ );
+    return ( $val, @args );
 }
 
 sub _check_version {
@@ -208,7 +208,7 @@ Dist::CheckConflicts - declare version conflicts for your dist
 
 =head1 VERSION
 
-version 0.08
+version 0.09
 
 =head1 SYNOPSIS
 
@@ -310,9 +310,8 @@ hashrefs, each containing C<package>, C<installed>, and C<required> keys.
 
 No known bugs.
 
-Please report any bugs through RT: email
-C<bug-dist-checkconflicts at rt.cpan.org>, or browse to
-L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Dist-CheckConflicts>.
+Please report any bugs to GitHub Issues at
+L<https://github.com/doy/dist-checkconflicts/issues>.
 
 =head1 SEE ALSO
 

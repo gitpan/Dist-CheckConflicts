@@ -22,14 +22,14 @@ requires:
   List::MoreUtils: 0.12
   Module::Runtime: 0
   base: 0
-  perl: 5.008001
+  perl: 5.006
   strict: 0
   warnings: 0
 resources:
   bugtracker: https://github.com/doy/dist-checkconflicts/issues
   homepage: http://metacpan.org/release/Dist-CheckConflicts
   repository: git://github.com/doy/dist-checkconflicts.git
-version: 0.08
+version: 0.09
 x_Dist_Zilla:
   perl:
     version: 5.018000
@@ -211,3 +211,4 @@ x_authority: cpan:DOY
 x_contributors:
   - 'Graham Knop <haarg@haarg.org>'
   - 'Karen Etheridge <ether@cpan.org>'
+  - 'Toby Inkster <mail@tobyinkster.co.uk>'
