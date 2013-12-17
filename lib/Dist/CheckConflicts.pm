@@ -3,7 +3,7 @@ BEGIN {
   $Dist::CheckConflicts::AUTHORITY = 'cpan:DOY';
 }
 {
-  $Dist::CheckConflicts::VERSION = '0.09';
+  $Dist::CheckConflicts::VERSION = '0.10';
 }
 use strict;
 use warnings;
@@ -17,7 +17,7 @@ our @EXPORT = our @EXPORT_OK = (
 
 use Carp;
 use List::MoreUtils 0.12 'first_index';
-use Module::Runtime 'module_notional_filename', 'require_module';
+use Module::Runtime 0.009 'module_notional_filename', 'require_module';
 
 
 my %CONFLICTS;
@@ -208,7 +208,7 @@ Dist::CheckConflicts - declare version conflicts for your dist
 
 =head1 VERSION
 
-version 0.09
+version 0.10
 
 =head1 SYNOPSIS
 
