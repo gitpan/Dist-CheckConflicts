@@ -2,9 +2,7 @@ package Dist::CheckConflicts;
 BEGIN {
   $Dist::CheckConflicts::AUTHORITY = 'cpan:DOY';
 }
-{
-  $Dist::CheckConflicts::VERSION = '0.10';
-}
+$Dist::CheckConflicts::VERSION = '0.11';
 use strict;
 use warnings;
 use 5.006;
@@ -16,7 +14,6 @@ our @EXPORT = our @EXPORT_OK = (
 );
 
 use Carp;
-use List::MoreUtils 0.12 'first_index';
 use Module::Runtime 0.009 'module_notional_filename', 'require_module';
 
 
@@ -106,13 +103,14 @@ sub import {
 
 sub _strip_opt {
     my ($opt, @args) = @_;
-    my $idx = first_index { ( $_ || '' ) eq $opt } @args;
 
-    return ( undef, @args ) unless $idx >= 0 && $#args >= $idx + 1;
-
-    my $val = $args[ $idx + 1 ];
-
-    splice @args, $idx, 2;
+    my $val;
+    for my $idx ( 0 .. $#args - 1 ) {
+        if (defined $args[$idx] && $args[$idx] eq $opt) {
+            $val = (splice @args, $idx, 2)[1];
+            last;
+        }
+    }
 
     return ( $val, @args );
 }
@@ -202,13 +200,15 @@ __END__
 
 =pod
 
+=encoding UTF-8
+
 =head1 NAME
 
 Dist::CheckConflicts - declare version conflicts for your dist
 
 =head1 VERSION
 
-version 0.10
+version 0.11
 
 =head1 SYNOPSIS
 
@@ -353,7 +353,7 @@ Jesse Luehrs <doy@tozt.net>
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2013 by Jesse Luehrs.
+This software is copyright (c) 2014 by Jesse Luehrs.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
